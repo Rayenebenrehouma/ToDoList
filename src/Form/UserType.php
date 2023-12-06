@@ -4,12 +4,16 @@ namespace App\Form;
 
 use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Count;
 use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 class UserType extends AbstractType
 {
@@ -43,6 +47,26 @@ class UserType extends AbstractType
                     ]]
             ])
             ->add('username')
+            ->add('roles', ChoiceType::class, [
+                'choices' => [
+                    'Administrateur' => 'ROLE_ADMIN',
+                    'Utilisateur' => 'ROLE_USER'
+                ],
+                'multiple' => true,
+                'expanded' => true,
+                'constraints' => [
+                    new Count([
+                        'max' => 1,
+                        'maxMessage' => 'Vous ne pouvez sélectionner qu\'un seul rôle.',
+                    ]),
+                    new NotBlank([
+                        'message' => 'Veuillez sélectionner un rôle.',
+                    ]),
+                ],
+            ])
+            ->add('submit', SubmitType::class, [
+                'label' => "S'inscrire",
+            ])
         ;
     }
 

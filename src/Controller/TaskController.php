@@ -23,7 +23,6 @@ class TaskController extends AbstractController
     public function ListAction(Request $request): Response
     {
         $tasks = $this->entityManager->getRepository(Task::class)->findAll();
-
         return $this->render('task/list.html.twig',[
             'tasks' => $tasks
         ]);
@@ -32,24 +31,26 @@ class TaskController extends AbstractController
     #[Route('/tasks/create', name: 'task_create')]
     public function createAction(Request $request){
         $task = new Task();
+        $user = $this->getUser();
         $form = $this->createForm(TaskType::class, $task);
 
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $task =$form->getData();
-            $date = new \DateTimeImmutable();
-            $date->format("d/m/Y H:i:s");
-            $task->setCreatedAt($date);
+        if ($user){
+            if ($form->isSubmitted() && $form->isValid()) {
+                $task =$form->getData();
+                $date = new \DateTimeImmutable();
+                $date->format("d/m/Y H:i:s");
+                $task->setCreatedAt($date);
+                $task->setUser($user);
 
+                $this->entityManager->persist($task);
+                $this->entityManager->flush();
+                $this->addFlash('success','Votre Task a bien été créer !');
 
-            $this->entityManager->persist($task);
-            $this->entityManager->flush();
-            $this->addFlash('success','Votre Task a bien été créer !');
-
-            return $this->redirectToRoute('home');
+                return $this->redirectToRoute('home');
+            }
         }
-
 
         return $this->render('task/create.html.twig',[
             'task' => $task,
@@ -105,12 +106,18 @@ class TaskController extends AbstractController
     public function deleteTaskAction(Task $task, Request $request, $id){
 
         $task = $this->entityManager->getRepository(Task::class)->find($id);
+        $user = $this->getUser();
 
-        $this->entityManager->remove($task);
-        $this->entityManager->flush();
 
-        $this->addFlash('success','Votre tâche a bien été supprimer !');
+        if ($user === $task->getUser()){
+            $this->entityManager->remove($task);
+            $this->entityManager->flush();
 
-        return $this->redirectToRoute('home');
+            $this->addFlash('success','Votre tâche a bien été supprimer !');
+            return $this->redirectToRoute('home');
+        }else{
+            $this->addFlash('danger', 'Vous essayez de supprimer une tâche qui ne vous appartient pas !');
+            return $this->redirectToRoute('task_list', status:403);
+        }
     }
 }

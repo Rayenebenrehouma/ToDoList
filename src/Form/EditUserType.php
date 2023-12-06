@@ -4,11 +4,14 @@ namespace App\Form;
 
 use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Count;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 class EditUserType extends AbstractType
 {
@@ -30,7 +33,21 @@ class EditUserType extends AbstractType
                 'attr' => [
                     'placeholder' => 'Merci de confirmez votre mot de passe'
                 ]]
-        ])
+            ])
+            ->add('roles', ChoiceType::class, [
+                'choices' => [
+                    'Devenez administrateur' => 'ROLE_ADMIN',
+                    'Devenez utilisateur' => 'ROLE_USER'
+                ],
+                'multiple' => true,
+                'expanded' => true,
+                'constraints' => [
+                    new Count([
+                        'max' => 1,
+                        'maxMessage' => 'Vous ne pouvez sélectionner qu\'un seul rôle.',
+                    ]),
+                ],
+            ])
             ->add('submit', SubmitType::class, [
                 'label' => "Mettre à jour mon mot de passe",
                 'attr' => [
