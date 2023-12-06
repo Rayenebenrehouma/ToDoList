@@ -43,6 +43,7 @@ class UserController extends AbstractController
             $password = $hasher->hashPassword($user, $user->getPassword());
 
             $user->setPassword($password);
+            $roles = $user->getRoles();
 
             $this->entityManager->persist($user);
             $this->entityManager->flush();
@@ -62,6 +63,7 @@ class UserController extends AbstractController
     public function editAction(User $user,Request $request,UserPasswordHasherInterface $hasher, $id){
         $user = $this->entityManager->getRepository(User::class)->find($id);
         $form = $this->createForm(EditUserType::class, $user);
+        $user->setRoles(["ROLE_USER"]);
 
         $form->handleRequest($request);
 
@@ -69,6 +71,7 @@ class UserController extends AbstractController
             if ($form->isSubmitted() && $form->isValid()){
                 $new_pwd = $form->get('password')->getData();
                 $password = $hasher->hashPassword($user, $new_pwd);
+                $roles = $user->getRoles();
 
                 $user->setPassword($password);
 
