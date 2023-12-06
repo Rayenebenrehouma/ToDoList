@@ -60,6 +60,7 @@ class TaskController extends AbstractController
 
     #[Route('/tasks/{id}/edit', name: 'task_edit')]
     public function editAction(Task $task,Request $request, $id){
+        $this->denyAccessUnlessGranted('task_edit', $task);
         $task = $this->entityManager->getRepository(Task::class)->find($id);
         $form = $this->createForm(EditTaskType::class, $task);
         $form->handleRequest($request);
