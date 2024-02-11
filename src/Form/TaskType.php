@@ -20,6 +20,9 @@ class TaskType extends AbstractType
 
             ->add('submit', SubmitType::class, [
                 'label' => "Mettre à jour",
+                "attr" => [
+                    "id" => "task-type-submit"
+                ]
             ])
             //->add('author') ===> must be the user authenticated
         ;
