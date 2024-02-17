@@ -24,11 +24,16 @@ class UserController extends AbstractController
     #[Route('/users', name: 'user_list')]
     public function ListAction(): Response
     {
-        $users = $this->entityManager->getRepository(User::class)->findAll();
+        if ($this->getUser()->getRoles()[0] == "ROLE_ADMIN"){
+            $users = $this->entityManager->getRepository(User::class)->findAll();
 
-        return $this->render('user/list.html.twig',[
-            'users' => $users
-        ]);
+            return $this->render('user/list.html.twig',[
+                'users' => $users
+            ]);
+        }else{
+            $this->addFlash('danger', 'Vous n\'avez pas accès à cette page');
+            return $this->redirectToRoute('home');
+        }
     }
 
     #[Route('/users/create', name: 'user_create')]

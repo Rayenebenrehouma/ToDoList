@@ -17,7 +17,7 @@ class EditTaskType extends AbstractType
             ->add('content')
             ->add('isDone')
             ->add('submit', SubmitType::class, [
-                'label' => "Ajoutez uune tâche",
+                'label' => "Mettre à jour",
                 'attr' => [
                     'class' => 'btn-block btn-info'
                 ]

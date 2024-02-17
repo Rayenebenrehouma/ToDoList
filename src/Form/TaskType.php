@@ -19,7 +19,7 @@ class TaskType extends AbstractType
             ->add('isDone')
 
             ->add('submit', SubmitType::class, [
-                'label' => "Mettre à jour",
+                'label' => "Créez une nouvelle tâche",
                 "attr" => [
                     "id" => "task-type-submit"
                 ]

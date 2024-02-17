@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Task;
+use App\Entity\User;
 use App\Form\EditTaskType;
 use App\Form\TaskType;
 use Doctrine\ORM\EntityManagerInterface;
@@ -19,10 +20,21 @@ class TaskController extends AbstractController
         $this->entityManager = $entityManager;
     }
 
-    #[Route('/task', name: 'task_list')]
+    #[Route('/task', name: 'task_list_todo')]
     public function ListAction(Request $request): Response
     {
-        $tasks = $this->entityManager->getRepository(Task::class)->findAll();
+        $is_done = 0;
+        $tasks = $this->entityManager->getRepository(Task::class)->findByIsDone($is_done);
+        return $this->render('task/list.html.twig',[
+            'tasks' => $tasks
+        ]);
+    }
+
+    #[Route('/task-done', name: 'task_list_done')]
+    public function ListActionDone(Request $request): Response
+    {
+        $is_done = 1;
+        $tasks = $this->entityManager->getRepository(Task::class)->findByIsDone($is_done);
         return $this->render('task/list.html.twig',[
             'tasks' => $tasks
         ]);
@@ -62,14 +74,21 @@ class TaskController extends AbstractController
     public function editAction(Task $task,Request $request, $id){
         $this->denyAccessUnlessGranted('task_edit', $task);
         $task = $this->entityManager->getRepository(Task::class)->find($id);
+        $id_user = 15;
+        $user = $this->entityManager->getRepository(User::class)->find($id_user);
         $form = $this->createForm(EditTaskType::class, $task);
         $form->handleRequest($request);
+
 
         if ($form->isSubmitted() && $form->isSubmitted()){
             $task = $form->getData();
             $date = new \DateTimeImmutable();
             $date->format("d/m/Y H:i:s");
             $task->setCreatedAt($date);
+            if (empty($task->getUser())){
+                $task->setUser($user);
+            }
+
 
             $this->entityManager->persist($task);
             $this->entityManager->flush();
@@ -110,8 +129,7 @@ class TaskController extends AbstractController
         $task = $this->entityManager->getRepository(Task::class)->find($id);
         $user = $this->getUser();
 
-
-        if ($user === $task->getUser()){
+        if ($user === $task->getUser() OR $task->getUser()->getId() === 15 AND $user->getRoles()[0] == "ROLE_ADMIN"){
             $this->entityManager->remove($task);
             $this->entityManager->flush();
 
@@ -119,7 +137,7 @@ class TaskController extends AbstractController
             return $this->redirectToRoute('home');
         }else{
             $this->addFlash('danger', 'Vous essayez de supprimer une tâche qui ne vous appartient pas !');
-            return $this->redirectToRoute('task_list', status:403);
+            return $this->redirectToRoute('task_list');
         }
     }
 }
